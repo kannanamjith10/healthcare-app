@@ -50,6 +50,16 @@
   font-weight: bold;
 ">
 </div>
+<button onclick="goBack()" style="
+    background: green;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+">
+    Back
+</button>
 <h3>Statistics</h3>
 <p> Children: <span id="childCount">0</span></p>
 <p> Vaccinated: <span id="vaccineCount">0</span></p>
@@ -168,7 +178,9 @@ function updateCheckup(index, value) {
   localStorage.setItem("patients", JSON.stringify(patients));
   location.reload();
 }
-
+function goBack() {
+    window.location.href = "patients.html";
+}
 </script>
 
 </body>
