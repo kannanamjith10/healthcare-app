@@ -26,12 +26,14 @@
 <body>
 
 <h1>Smart Healthcare System</h1>
-
+<a href="patients.html">View Patient List</a>
+<br><br>
+<a href="dashboard.html">Go to Dashboard</a>
 <h3>Add Patient</h3>
 
 <input type="text" id="name" placeholder="Patient Name">
 <input type="number" id="age" placeholder="Age">
-
+<input type="text" id="phone" placeholder="phone Number">
 <select id="gender">
     <option value="">Select Gender</option>
     <option>Male</option>
@@ -40,22 +42,17 @@
 
 <select id="category">
     <option value="">Select Category</option>
-    <option>Pregnant</option>
     <option>Child</option>
     <option>Elderly</option>
+    <option>Adult</option>
 </select>
+    <input type=""text" id="disease"placeholder="Disease/Health issue">
 
-<select id="vaccine">
-    <option value="">Vaccination</option>
-    <option>Vaccinated</option>
-    <option>Not Vaccinated</option>
-</select>
 
 <button onclick="addPatient()">Add Patient</button>
-
+<p id="message" style="color:green;"></p>
 <br><br>
 
-<a href="dashboard.html">Go to Dashboard</a>
 
 <script>
 function addPatient() {
@@ -66,7 +63,7 @@ function addPatient() {
         alert("Enter name");
         return;
     }
-
+    let Phone =document.getElementById("phone").value;
     let patients = JSON.parse(localStorage.getItem("patients")) || [];
 
     let patient = {
@@ -74,7 +71,8 @@ function addPatient() {
         age: document.getElementById("age").value,
         gender: document.getElementById("gender").value,
         category: document.getElementById("category").value,
-        vaccine: document.getElementById("vaccine").value
+         disease :document.getElementById("disease").value,
+         phone:document.getElementById("phone").value
     };
 
     patients.push(patient);
@@ -82,7 +80,7 @@ function addPatient() {
     localStorage.setItem("patients", JSON.stringify(patients));
 
     alert("Patient added successfully ✅");
-
+document.getElementById("message").innerText = "Patient added successfully!";
 }
 </script>
 

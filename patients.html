@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Patients</title>
+
+<style>
+body {
+  font-family: Arial;
+  padding: 20px;
+}
+
+/* TABLE */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+th {
+  background: green;
+  color: white;
+  padding: 10px;
+}
+
+td {
+  padding: 10px;
+  border: 1px solid #ccc;
+}
+
+/* ALERT COLORS (ONLY FOR HIGH RISK TABLE) */
+.elderly {
+  background-color: #ffe5e5;   /* light red */
+}
+
+.pregnant {
+  background-color: #fff5cc;   /* light yellow */
+}
+
+.attention {
+  background-color: #e0f7fa;   /* light blue */
+}
+
+/* BUTTON */
+button {
+  padding: 8px 12px;
+  margin-top: 10px;
+  cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<h2 style="color:green;">All Patients</h2>
+
+<button onclick="window.location.href='index.html'">Back</button>
+
+<br><br>
+
+<input type="text" id="search" placeholder="Search...">
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Phone</th>
+<th>Age</th>
+<th>Gender</th>
+<th>Category</th>
+<th>Disease</th>
+<th>Call</th>
+</tr>
+</thead>
+<tbody id="tableBody"></tbody>
+</table>
+
+<button id="toggleBtn">Read More</button>
+
+<h2 style="color:red;">High Risk Patients</h2>
+
+<select id="filter">
+<option value="all">All Risk</option>
+<option value="elderly">Elderly</option>
+<option value="pregnant">Pregnant</option>
+<option value="attention">Needs Attention</option>
+</select>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Age</th>
+<th>Gender</th>
+<th>Category</th>
+<th>Disease</th>
+<th>Alert Type</th>
+<th>Call</th>
+</tr>
+</thead>
+<tbody id="alertTable"></tbody>
+</table>
+
+<script>
+let search= document.getElementById("search");
+let tableBody = document.getElementById("tableBody");
+let alertTable = document.getElementById("alertTable");
+let toggleBtn = document.getElementById("toggleBtn");
+let filter = document.getElementById("filter");
+
+let showAll = false;
+
+/* LOAD PATIENTS */
+function loadPatients() {
+
+  tableBody.innerHTML = "";
+
+  let patients = JSON.parse(localStorage.getItem("patients")) || [];
+
+  //let data = showAll ? patients : patients.slice(0,5);
+let searchText = search.value.toLowerCase();
+
+let filtered = patients.filter(p =>
+  p.name.toLowerCase().includes(searchText) ||
+  (p.phone && p.phone.includes(searchText)) ||
+  p.category.toLowerCase().includes(searchText)
+);
+
+let data = showAll ? filtered : filtered.slice(0,5);
+  data.forEach(p => {
+    tableBody.innerHTML += `
+      <tr>
+        <td>${p.name}</td>
+        <td>${p.phone || "N/A"}</td>
+        <td>${p.age}</td>
+        <td>${p.gender}</td>
+        <td>${p.category}</td>
+        <td>${p.disease || "N/A"}</td>
+        <td><a href="tel:${p.phone || ""}">Call</a></td>
+      </tr>
+    `;
+  });
+
+  toggleBtn.innerText = showAll ? "Show Less" : "Read More";
+}
+
+/* LOAD ALERTS */
+function loadAlerts() {
+
+  alertTable.innerHTML = "";
+
+  let patients = JSON.parse(localStorage.getItem("patients")) || [];
+  let selected = filter.value;
+
+  patients.forEach(p => {
+
+    let alertType = "";
+    let rowClass = "";
+
+    if (p.category === "Elderly") {
+      alertType = "ELDERLY";
+      rowClass = "elderly";
+    }
+    else if (p.category === "Pregnant") {
+      alertType = "PREGNANT";
+      rowClass = "pregnant";
+    }
+    else if (p.category === "Child" || (p.disease && p.disease.toLowerCase().includes("not vaccinated"))) {
+      alertType = "ATTENTION";
+      rowClass = "attention";
+    }
+
+    if (alertType !== "") {
+      if (selected === "all" || selected === alertType.toLowerCase()) {
+
+        alertTable.innerHTML += `
+          <tr class="${rowClass}">
+            <td>${p.name}</td>
+            <td>${p.age}</td>
+            <td>${p.gender}</td>
+            <td>${p.category}</td>
+            <td>${p.disease || "N/A"}</td>
+            <td>${alertType}</td>
+            <td><a href="tel:${p.phone || ""}">Call</a></td>
+          </tr>
+        `;
+      }
+    }
+
+  });
+}
+
+/* TOGGLE */
+toggleBtn.addEventListener("click", () => {
+  showAll = !showAll;
+  loadPatients();
+});
+
+/* FILTER */
+filter.addEventListener("change", loadAlerts);
+search.addEventListener("input", () => {
+  loadPatients();
+});
+/* INITIAL LOAD */
+loadPatients();
+loadAlerts();
+
+</script>
+
+</body>
+</html>

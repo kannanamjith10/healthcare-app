@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Healthcare Dashboard</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      padding: 20px;
+      background: #f4f6f9;
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    /* CIRCLE STATS */
+    .stats {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+
+    .circle {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-weight: bold;
+      margin: 10px;
+    }
+
+    .green { background: #28a745; }
+    .red { background: #dc3545; }
+    .blue { background: #007bff; }
+    .orange { background: #fd7e14; }
+
+    /* CARDS */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      transition: 0.3s;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .card:hover {
+      background: #28a745;
+      color: white;
+      transform: scale(1.05);
+    }
+
+  </style>
+</head>
+
+<body>
+
+<h1>Healthcare Dashboard</h1>
+
+<!-- 🔵 STATS -->
+<div class="stats">
+
+  <div class="circle blue">
+    <div id="total">0</div>
+    Total
+  </div>
+
+  <div class="circle green">
+    <div id="vaccineYes">0</div>
+    Vaccinated
+  </div>
+
+  <div class="circle red">
+    <div id="vaccineNo">0</div>
+    Not Vaccinated
+  </div>
+
+  <div class="circle orange">
+    <div id="pregnant">0</div>
+    Pregnant
+  </div>
+
+</div>
+
+<!-- 🟩 CARDS -->
+<div class="cards">
+
+  <div class="card" onclick="location.href='index.html'">
+     Add Patient
+  </div>
+
+  <div class="card" onclick="location.href='patients.html'">
+     View Patients
+  </div>
+
+  <div class="card" onclick="location.href='monitor.html'">
+     Monitor
+  </div>
+
+  <div class="card" onclick="location.href='scheme.html'">
+    Government support
+  </div>
+
+  <div class="card" onclick="location.href='doctor.html'">
+     Doctor Consultation
+  </div>
+
+</div>
+
+<script>
+
+// LOAD DATA
+let patients = JSON.parse(localStorage.getItem("patients")) || [];
+
+// COUNTS
+let total = patients.length;
+let vaccineYes = 0;
+let vaccineNo = 0;
+let pregnant = 0;
+
+patients.forEach(p => {
+
+  if (p.vaccine === "yes") vaccineYes++;
+  if (p.vaccine === "no") vaccineNo++;
+
+  if (p.disease && p.disease.toLowerCase().includes("pregnant")) {
+    pregnant++;
+  }
+
+});
+
+// SHOW VALUES
+document.getElementById("total").innerText = total;
+document.getElementById("vaccineYes").innerText = vaccineYes;
+document.getElementById("vaccineNo").innerText = vaccineNo;
+document.getElementById("pregnant").innerText = pregnant;
+
+</script>
+
+</body>
+</html>

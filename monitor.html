@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Health Monitor</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      padding: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: center;
+      border: 1px solid #ccc;
+    }
+
+    th {
+      background-color: #f2f2f2;
+    }
+
+    .high {
+      background: #ffcccc;
+    }
+
+    .medium {
+      background: #fff3cd;
+    }
+
+    .low {
+      background: #d4edda;
+    }
+  </style>
+</head>
+
+<body>
+
+<h2>Health Monitoring Page</h2>
+<div id="alertBox" style="
+  background: #ff4d4d;
+  color: white;
+  padding: 10px;
+  margin-bottom: 15px;
+  font-weight: bold;
+">
+</div>
+<h3>Statistics</h3>
+<p> Children: <span id="childCount">0</span></p>
+<p> Vaccinated: <span id="vaccineCount">0</span></p>
+<p>Pregnant: <span id="pregCount">0</span></p>
+<p> Checkup Done: <span id="checkCount">0</span></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Category</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+
+  <tbody id="monitorTable"></tbody>
+</table>
+
+<script>
+
+let patients = JSON.parse(localStorage.getItem("patients")) || [];
+let table = document.getElementById("monitorTable");
+
+let child = 0;
+let vaccineDone = 0;
+let pregnant = 0;
+let checkDone = 0;
+let alerts = [];
+// ensure fields exist
+patients.forEach(p => {
+  if (!p.checkup) p.checkup = "no";
+  if (!p.vaccine) p.vaccine = "no";
+});
+
+patients.forEach((p, index) => {
+
+  let action = "";
+  let rowClass = "";
+
+  // CHILD → Vaccine
+  if (p.category === "Child") {
+    child++;
+
+    if (p.vaccine === "yes") vaccineDone++;
+if (p.vaccine === "no") {
+  alerts.push( p.name + " didn't take vaccination");
+}
+    action = `
+      <select onchange="updateVaccine(${index}, this.value)">
+        <option value="no" ${p.vaccine === "no" ? "selected" : ""}>Not Taken</option>
+        <option value="yes" ${p.vaccine === "yes" ? "selected" : ""}>Taken</option>
+      </select>
+    `;
+
+    rowClass = p.vaccine === "no" ? "high" : "low";
+  }
+
+  // PREGNANT → Checkup
+  else if (p.disease && p.disease.toLowerCase().includes("pregnant")) {
+    pregnant++;
+
+    if (p.checkup === "yes") checkDone++;
+if (p.checkup === "no") {
+  alerts.push("🤰 " + p.name + " didn't take checkup");
+}
+    action = `
+      <select onchange="updateCheckup(${index}, this.value)">
+        <option value="no" ${p.checkup === "no" ? "selected" : ""}>Not Done</option>
+        <option value="yes" ${p.checkup === "yes" ? "selected" : ""}>Done</option>
+      </select>
+    `;
+
+    rowClass = p.checkup === "no" ? "medium" : "low";
+  }
+
+  // OTHERS
+  else {
+    action = "Monitor";
+    rowClass = "";
+  }
+
+  table.innerHTML += `
+    <tr class="${rowClass}">
+      <td>${p.name}</td>
+      <td>${p.category}</td>
+      <td>${action}</td>
+    </tr>
+  `;
+});
+
+// update counts
+document.getElementById("childCount").innerText = child;
+document.getElementById("vaccineCount").innerText = vaccineDone;
+document.getElementById("pregCount").innerText = pregnant;
+document.getElementById("checkCount").innerText = checkDone;
+// 🔥 SHOW ALERT MESSAGES
+let alertBox = document.getElementById("alertBox");
+
+if (alerts.length > 0) {
+  alertBox.innerHTML = " Attention Required:<br><br>" + alerts.join("<br>");
+} else {
+  alertBox.innerHTML = " All patients are up to date";
+  alertBox.style.background = "green";
+}
+// update functions
+function updateVaccine(index, value) {
+  let patients = JSON.parse(localStorage.getItem("patients")) || [];
+  patients[index].vaccine = value;
+  localStorage.setItem("patients", JSON.stringify(patients));
+  location.reload();
+}
+
+function updateCheckup(index, value) {
+  let patients = JSON.parse(localStorage.getItem("patients")) || [];
+  patients[index].checkup = value;
+  localStorage.setItem("patients", JSON.stringify(patients));
+  location.reload();
+}
+
+</script>
+
+</body>
+</html>

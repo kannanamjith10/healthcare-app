@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Smart Doctor Consultation</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      padding: 20px;
+      background: #f4f6f9;
+    }
+
+    h2 { text-align: center; }
+
+    .box {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    select, textarea, input, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+    }
+
+    button {
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .blue { background:#007bff; color:white; }
+    .green { background:#28a745; color:white; }
+    .orange { background:#ffc107; }
+
+    .high { color:red; font-weight:bold; }
+    .medium { color:orange; }
+    .low { color:green; }
+
+    .alertBox {
+      background:#ff4d4d;
+      color:white;
+      padding:10px;
+      margin-bottom:15px;
+      border-radius:8px;
+    }
+
+    .record {
+      background: #e9ecef;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 5px;
+    }
+
+  </style>
+</head>
+
+<body>
+
+<h2>Smart Telemedicine System</h2>
+
+<div id="alertBox" class="alertBox"></div>
+
+<div class="box">
+
+  <p>Consultation Time: 9 AM - 1 PM</p>
+
+  <label>Select Patient (Priority Sorted)</label>
+  <select id="patientSelect"></select>
+
+  <label>Date</label>
+  <input type="date" id="date">
+
+  <label>Time Slot</label>
+  <select id="slot">
+    <option>9:00 AM</option>
+    <option>10:00 AM</option>
+    <option>11:00 AM</option>
+    <option>12:00 PM</option>
+  </select>
+
+  <button class="orange" onclick="book()">Book Appointment</button>
+
+  <button class="blue" onclick="startCall()"> Join Video Call</button>
+
+  <label>Doctor Notes</label>
+  <textarea id="notes"></textarea>
+
+  <button class="green" onclick="saveConsultation()">Save Consultation</button>
+
+  <p id="msg"></p>
+
+</div>
+
+<h3> Appointments</h3>
+<div id="appointments"></div>
+
+<h3>Consultation History</h3>
+<div id="history"></div>
+
+<script>
+
+let patients = JSON.parse(localStorage.getItem("patients")) || [];
+
+// 🧠 RISK FUNCTION
+function getRisk(p) {
+
+  if (p.age <= 5 && p.vaccine === "no") return "high";
+
+  if (p.disease && p.disease.toLowerCase().includes("pregnant") && p.checkup === "no") return "high";
+
+  if (p.age > 60) return "medium";
+
+  return "low";
+}
+
+
+// 🔥 SORT BY PRIORITY
+patients.sort((a, b) => {
+  let priority = { high: 1, medium: 2, low: 3 };
+  return priority[getRisk(a)] - priority[getRisk(b)];
+});
+
+
+// 🟢 FILL DROPDOWN
+let select = document.getElementById("patientSelect");
+
+patients.forEach((p, i) => {
+  let risk = getRisk(p);
+  select.innerHTML += `<option value="${i}" class="${risk}">
+    ${p.name} (${risk.toUpperCase()})
+  </option>`;
+});
+
+
+// 🚨 ALERT BOX
+let alerts = [];
+
+patients.forEach(p => {
+  if (getRisk(p) === "high") {
+    alerts.push(p.name + " needs immediate attention");
+  }
+});
+
+let alertBox = document.getElementById("alertBox");
+
+if (alerts.length > 0) {
+  alertBox.innerHTML = " High Risk Patients:<br>" + alerts.join("<br>");
+} else {
+  alertBox.innerHTML = " No critical patients";
+  alertBox.style.background = "green";
+}
+
+
+// 📅 BOOK
+function book() {
+
+  let index = select.value;
+  let date = document.getElementById("date").value;
+  let slot = document.getElementById("slot").value;
+
+  if (!date) return alert("Select date");
+
+  let data = JSON.parse(localStorage.getItem("appointments")) || [];
+
+  data.push({
+    name: patients[index].name,
+    date,
+    slot
+  });
+
+  localStorage.setItem("appointments", JSON.stringify(data));
+
+  alert("Appointment booked");
+  loadAppointments();
+}
+
+
+// 📹 CALL
+function startCall() {
+  let hour = new Date().getHours();
+
+  if (hour < 9 || hour >= 13) {
+    alert(" Not consultation time");
+    return;
+  }
+
+  window.open("https://meet.google.com/", "_blank");
+}
+
+
+// 💾 SAVE
+function saveConsultation() {
+
+  let hour = new Date().getHours();
+
+  if (hour < 9 || hour >= 13) {
+    document.getElementById("msg").innerText = "Not allowed now";
+    return;
+  }
+
+  let index = select.value;
+  let note = document.getElementById("notes").value;
+
+  if (!note) return;
+
+  let data = JSON.parse(localStorage.getItem("consultations")) || [];
+
+  data.push({
+    name: patients[index].name,
+    note,
+    time: new Date().toLocaleString(),
+    risk: getRisk(patients[index])
+  });
+
+  localStorage.setItem("consultations", JSON.stringify(data));
+
+  document.getElementById("msg").innerText = "Saved";
+
+  loadHistory();
+}
+
+
+// 📋 LOAD APPOINTMENTS
+function loadAppointments() {
+  let data = JSON.parse(localStorage.getItem("appointments")) || [];
+  let div = document.getElementById("appointments");
+  div.innerHTML = "";
+
+  data.forEach(a => {
+    div.innerHTML += `<div class="record"> ${a.name} | ${a.date} | ${a.slot}</div>`;
+  });
+}
+
+
+// 📋 HISTORY
+function loadHistory() {
+  let data = JSON.parse(localStorage.getItem("consultations")) || [];
+  let div = document.getElementById("history");
+  div.innerHTML = "";
+
+  data.reverse().forEach(c => {
+    div.innerHTML += `<div class="record ${c.risk}">
+      <b>${c.name}</b> (${c.risk})<br>
+      ${c.note}<br>
+      <small>${c.time}</small>
+    </div>`;
+  });
+}
+
+
+loadAppointments();
+loadHistory();
+
+</script>
+
+<br><br>
+<a href="index.html"> Back to Dashboard</a>
+
+</body>
+</html>

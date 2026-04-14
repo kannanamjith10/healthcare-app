@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Government Support</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      padding: 20px;
+      background: #f4f6f9;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .scheme {
+      background: white;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    .title {
+      font-weight: bold;
+      margin-bottom: 5px;
+      font-size: 18px;
+    }
+
+    input {
+      padding: 8px;
+      width: 90%;
+      margin-bottom: 10px;
+    }
+
+    button {
+      padding: 10px;
+      background: #28a745;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    .danger {
+      color: red;
+      font-weight: bold;
+    }
+
+    .success {
+      color: green;
+      font-weight: bold;
+    }
+
+  </style>
+</head>
+
+<body>
+
+<h2> Government Health Support</h2>
+
+<!-- SCHEMES -->
+
+<div class="scheme">
+  <div class="title"> Child Vaccination Program</div>
+  Free vaccines available for children under 5 years.
+</div>
+
+<div class="scheme">
+  <div class="title"> Maternal Care Scheme</div>
+  Free checkups and nutrition support for pregnant women.
+</div>
+
+<div class="scheme">
+  <div class="title"> Elderly Health Support</div>
+  Free health camps and medicines for senior citizens.
+</div>
+
+
+<!-- AYUSHMAN REGISTRATION -->
+
+<h3>Ayushman Bharat Registration</h3>
+
+<div class="scheme">
+
+  <input type="text" id="name" placeholder="Enter Name"><br>
+  <input type="number" id="age" placeholder="Enter Age"><br>
+  <input type="text" id="aadhaar" placeholder="Enter Aadhaar Number"><br>
+
+  <button onclick="checkEligibility()">Check Eligibility</button>
+
+  <p id="eligibilityMsg"></p>
+
+  <button onclick="register()">Register</button>
+
+  <p id="message"></p>
+
+</div>
+
+
+<!-- REGISTERED LIST -->
+
+<h3>Registered Users</h3>
+<div id="list"></div>
+
+
+<script>
+
+// CHECK ELIGIBILITY
+function checkEligibility() {
+
+  let age = document.getElementById("age").value;
+
+  let msg = document.getElementById("eligibilityMsg");
+
+  if (age === "") {
+    msg.innerText = " Enter age first";
+    msg.className = "danger";
+    return;
+  }
+
+  if (age < 5 || age > 60) {
+    msg.innerText = " Eligible for Ayushman Bharat";
+    msg.className = "success";
+  } else {
+    msg.innerText = "Limited eligibility (consult authority)";
+    msg.className = "danger";
+  }
+}
+
+
+// REGISTER USER
+function register() {
+
+  let name = document.getElementById("name").value;
+  let age = document.getElementById("age").value;
+  let aadhaar = document.getElementById("aadhaar").value;
+
+  if (name === "" || age === "" || aadhaar === "") {
+    document.getElementById("message").innerText = " Fill all fields";
+    return;
+  }
+
+  let data = JSON.parse(localStorage.getItem("ayushman")) || [];
+
+  data.push({
+    name: name,
+    age: age,
+    aadhaar: aadhaar
+  });
+
+  localStorage.setItem("ayushman", JSON.stringify(data));
+
+  document.getElementById("message").innerText = "Registered Successfully";
+
+  loadList();
+}
+
+
+// LOAD REGISTERED USERS
+function loadList() {
+
+  let data = JSON.parse(localStorage.getItem("ayushman")) || [];
+  let list = document.getElementById("list");
+
+  list.innerHTML = "";
+
+  data.forEach(p => {
+    list.innerHTML += `
+      <div class="scheme">
+        ${p.name} | Age: ${p.age}
+      </div>
+    `;
+  });
+
+}
+
+// INITIAL LOAD
+loadList();
+
+</script>
+
+<br><br>
+<a href="dashboard.html">Back to Dashboard</a>
+
+</body>
+</html>
